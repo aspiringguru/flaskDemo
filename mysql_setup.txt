@@ -1,0 +1,75 @@
+https://code.tutsplus.com/tutorials/creating-a-web-app-from-scratch-using-python-flask-and-mysql--cms-22972
+
+
+
+CREATE DATABASE BucketList;
+
+#set mysql console to use the database created.
+use BucketList;
+
+#original code by tutorial.
+
+CREATE TABLE `BucketList`.`tbl_user` (
+  `user_id` BIGINT NULL AUTO_INCREMENT,
+  `user_name` VARCHAR(45) NULL,
+  `user_username` VARCHAR(45) NULL,
+  `user_password` VARCHAR(45) NULL,
+  PRIMARY KEY (`user_id`));
+
+#original code gave this error.
+#ERROR 1171 (42000): All parts of a PRIMARY KEY must be NOT NULL; if you need NULL in a key, use UNIQUE instead
+#made column user_password longer varchar due to hashedpassword being 66 characters. 
+#also fixed procedure to use same varchar length
+
+
+DROP TABLE tbl_user;
+DESC tbl_user;
+
+CREATE TABLE `BucketList`.`tbl_user` (
+  `user_id` BIGINT UNIQUE AUTO_INCREMENT,
+  `user_name` VARCHAR(45) NULL,
+  `user_username` VARCHAR(45) NULL,
+  `user_password` VARCHAR(70) NULL,
+  PRIMARY KEY (`user_id`));
+
+#now view results.
+DESC tbl_user;
+
+
+SELECT * FROM tbl_user;
+
+
+#stored procedure called sp_createUser
+#DROP {PROCEDURE | FUNCTION} [IF EXISTS] sp_name
+DROP PROCEDURE sp_createUser
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_createUser`(
+    IN p_name VARCHAR(20),
+    IN p_username VARCHAR(20),
+    IN p_password VARCHAR(70)
+)
+BEGIN
+    if ( select exists (select 1 from tbl_user where user_username = p_username) ) THEN
+     
+        select 'Username Exists !!';
+     
+    ELSE
+     
+        insert into tbl_user
+        (
+            user_name,
+            user_username,
+            user_password
+        )
+        values
+        (
+            p_name,
+            p_username,
+            p_password
+        );
+     
+    END IF;
+END$$
+DELIMITER ;
+
